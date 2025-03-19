@@ -1,20 +1,39 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading;
-
-namespace NF_WiFiManager
+﻿namespace NF_WiFiManager
 {
+    using System.Diagnostics;
+    using System.Net.NetworkInformation;
+    using System.Threading;
+
+    using nanoFramework.Networking;
+
+    using NF_WiFiManager.AP;
+    using NF_WiFiManager.Web;
+    using NF_WiFiManager.WiFi;
+
     public class Program
     {
         public static void Main()
         {
-            Debug.WriteLine("Hello from nanoFramework!");
+            Debug.WriteLine("Starting WiFiManager...");
+            bool wifiConnected = WiFiConnectionManager.TryConnect(60000);
+            if (wifiConnected)
+            {
+                Debug.WriteLine("WiFi connected successfully.");
+                NetworkInterface ni = NetworkInterface.GetAllNetworkInterfaces()[0];
+                Debug.WriteLine($"IP address: {ni.IPv4Address}");
+                Thread.Sleep(Timeout.Infinite);
+            }
+            else
+            {
+                Debug.WriteLine("WiFi connection failed.");
+                if (WifiNetworkHelper.HelperException != null)
+                {
+                    Debug.WriteLine($"Error: {WifiNetworkHelper.HelperException.Message}");
+                }
 
-            Thread.Sleep(Timeout.Infinite);
-
-            // Browse our samples repository: https://github.com/nanoframework/samples
-            // Check our documentation online: https://docs.nanoframework.net/
-            // Join our lively Discord community: https://discord.gg/gCyBu8T
+                AccessPointManager.SetupAccessPoint();
+                WebServer.Start();
+            }
         }
     }
 }
